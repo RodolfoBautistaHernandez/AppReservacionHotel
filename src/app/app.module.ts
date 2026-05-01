@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
-
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
@@ -13,16 +12,9 @@ import { LoginComponent } from './components/login/login.component';
 import { AuthInterceptor } from './shared/auth.interceptor';
 import { ErrorInterceptor } from './shared/error.interceptor';
 import { HuespedesComponent } from './components/huespedes/huespedes.component';
-<<<<<<< HEAD
-
-import { ReservacionComponent } from './components/reservas/reservas.component';
-
-import { HabitacionesComponent } from './components/habitaciones/habitaciones.component';
-
-=======
 import { ReservacionComponent } from './components/reservas/reservas.component';
 import { HabitacionesComponent } from './components/habitaciones/habitaciones.component';
->>>>>>> 0f456b6987c861386c38e7b35103e40ec1295025
+
 
 @NgModule({
   declarations: [
@@ -35,10 +27,7 @@ import { HabitacionesComponent } from './components/habitaciones/habitaciones.co
     HuespedesComponent,
     ReservacionComponent,
     HabitacionesComponent
-<<<<<<< HEAD
 
-=======
->>>>>>> 0f456b6987c861386c38e7b35103e40ec1295025
   ],
   imports: [
     BrowserModule,
