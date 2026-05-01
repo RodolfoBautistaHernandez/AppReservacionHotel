@@ -13,11 +13,8 @@ import { LoginComponent } from './components/login/login.component';
 import { AuthInterceptor } from './shared/auth.interceptor';
 import { ErrorInterceptor } from './shared/error.interceptor';
 import { HuespedesComponent } from './components/huespedes/huespedes.component';
-<<<<<<< HEAD
 import { ReservacionComponent } from './components/reservas/reservas.component';
-=======
 import { HabitacionesComponent } from './components/habitaciones/habitaciones.component';
->>>>>>> 07b73cba9bab8f8a0fcac8a4b8b84435a05cde5b
 
 @NgModule({
   declarations: [
@@ -28,11 +25,8 @@ import { HabitacionesComponent } from './components/habitaciones/habitaciones.co
     NavbarComponent,
     LoginComponent,
     HuespedesComponent,
-<<<<<<< HEAD
-    ReservacionComponent
-=======
+    ReservacionComponent,
     HabitacionesComponent
->>>>>>> 07b73cba9bab8f8a0fcac8a4b8b84435a05cde5b
   ],
   imports: [
     BrowserModule,
