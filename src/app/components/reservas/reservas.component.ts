@@ -15,19 +15,14 @@ declare var bootstrap: any;
   templateUrl: './reservas.component.html',
   styleUrl: './reservas.component.css',
 })
-  export class ReservacionComponent implements OnInit, AfterViewInit {
-    protected reservaciones$!: Observable<ReservacionResponse[]>;
-    protected textoModal: string = 'Registrar Reservación';
-    protected reservasForm: FormGroup;
-    protected esEditMode: boolean = false;
-    private selectedReservas: ReservacionResponse | null = null;
-    private selectedReservasId: number | null = null;
-    private refresh$ = new BehaviorSubject<void>(undefined);
-
-    formatearFecha(fecha: string): string {
-      const [year, month, day] = fecha.split('-');
-      return `${day}-${month}-${year}`;
-}
+export class ReservacionComponent implements OnInit, AfterViewInit {
+  protected reservaciones$!: Observable<ReservacionResponse[]>;
+  protected textoModal: string = 'Registrar Reservación';
+  protected reservasForm: FormGroup;
+  protected esEditMode: boolean = false;
+  private selectedReservas: ReservacionResponse | null = null;
+  private selectedReservasId: number | null = null;
+  private refresh$ = new BehaviorSubject<void>(undefined);
 
   @ViewChild('reservasModalRef')
   reservasModalEl!: ElementRef;
@@ -44,6 +39,11 @@ declare var bootstrap: any;
       fechaIngreso: ['', [Validators.required]],
       fechaSalida: ['', [Validators.required]],
     });
+  }
+
+  private formatearFecha(fecha: string): string {
+    const [year, month, day] = fecha.split('-');
+    return `${day}/${month}/${year}`;
   }
 
   private refrescarReservas(): void {
@@ -68,42 +68,39 @@ declare var bootstrap: any;
   }
 
   public ngOnInit(): void {
-  this.reservaciones$ = this.refresh$.pipe(
-    switchMap(() => this.reservasService.getReservaciones()), 
-  );
-}
+    this.reservaciones$ = this.refresh$.pipe(
+      switchMap(() => this.reservasService.getReservaciones()),
+    );
+  }
 
   protected onSubmit(): void {
     if (this.reservasForm.invalid) return;
 
-    const reservaData: ReservacionRequest = this.reservasForm.getRawValue();
+    const formValue = this.reservasForm.getRawValue();
+
+    const reservaData: ReservacionRequest = {
+      ...formValue,
+      fechaIngreso: this.formatearFecha(formValue.fechaIngreso),
+      fechaSalida: this.formatearFecha(formValue.fechaSalida),
+    };
 
     if (this.esEditMode && this.selectedReservas && this.selectedReservasId) {
-
-  const data = { ...reservaData };
-
-  data.fechaIngreso = this.formatearFecha(data.fechaIngreso);
-  data.fechaSalida = this.formatearFecha(data.fechaSalida);
-
-  console.log(data); // 👈 verifica
-
-  this.reservasService.putReservacion(data, this.selectedReservasId).subscribe({
-    next: (): void => {
-      this.refrescarReservas();
-      Swal.fire('Actualizado', 'Reservación actualizada correctamente', 'success');
-      this.modalInstance.hide();
-    },
-    error: (error) => {
-      console.log('Error al actualizar Reservación: ', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        html: `No se puede actualizar la reservación<br><small>${error.error?.message ?? ''}</small>`,
+      this.reservasService.putReservacion(reservaData, this.selectedReservasId).subscribe({
+        next: (): void => {
+          this.refrescarReservas();
+          Swal.fire('Actualizado', 'Reservación actualizada correctamente', 'success');
+          this.modalInstance.hide();
+        },
+        error: (error) => {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            html: `No se puede actualizar la reservación<br><small>${error.error?.message ?? ''}</small>`,
+          });
+        },
       });
-    },
-  });
-  return;
-}
+      return;
+    }
 
     this.reservasService.postReservacion(reservaData).subscribe({
       next: (): void => {
@@ -112,7 +109,6 @@ declare var bootstrap: any;
         this.modalInstance.hide();
       },
       error: (error) => {
-        console.log('Error al registrar Reservación: ', error);
         Swal.fire({
           icon: 'error',
           title: 'Error',
@@ -123,20 +119,20 @@ declare var bootstrap: any;
   }
 
   protected editarReservacion(reservacion: ReservacionResponse): void {
-  if (!reservacion.huesped || !reservacion.habitacion) return;
+    if (!reservacion.huesped || !reservacion.habitacion) return;
 
-  this.esEditMode = true;
-  this.selectedReservas = reservacion;
-  this.selectedReservasId = reservacion.id;
-  this.textoModal = 'Editando Reservación #' + reservacion.id;
-  this.reservasForm.patchValue({
-    idHuesped: reservacion.huesped.id,
-    idHabitaciones: reservacion.habitacion.id,
-    fechaIngreso: reservacion.fechaIngreso,
-    fechaSalida: reservacion.fechaSalida,
-  });
-  this.modalInstance.show();
-}
+    this.esEditMode = true;
+    this.selectedReservas = reservacion;
+    this.selectedReservasId = reservacion.id;
+    this.textoModal = 'Editando Reservación #' + reservacion.id;
+    this.reservasForm.patchValue({
+      idHuesped: reservacion.huesped.id,
+      idHabitaciones: reservacion.habitacion.id,
+      fechaIngreso: reservacion.fechaIngreso,
+      fechaSalida: reservacion.fechaSalida,
+    });
+    this.modalInstance.show();
+  }
 
   protected isAdmin(): boolean {
     return this.authService.hasRole(Roles.ADMIN);
@@ -158,7 +154,6 @@ declare var bootstrap: any;
             Swal.fire('Eliminado', 'Reservación eliminada correctamente', 'success');
           },
           error: (error) => {
-            console.error('Error al eliminar reservación: ', error);
             Swal.fire({
               icon: 'error',
               title: 'Error',
