@@ -1,0 +1,106 @@
+<div class="container-fluid mt-4">
+  <h2>Reservaciones</h2>
+  <div class="d-flex justify-content-between mb-3">
+    <button (click)="toggleForm()" class="btn btn-success">
+      <i class="fa-solid fa-plus"></i>
+      Registrar Reservación
+    </button>
+  </div>
+
+  <table class="table table-striped table-bordered mt-3">
+    <thead class="table-dark">
+      <tr style="text-align: center;">
+        <th scope="col">#</th>
+        <th scope="col">Huésped</th>
+        <th scope="col">Email</th>
+        <th scope="col">Teléfono</th>
+        <th scope="col">Habitación</th>
+        <th scope="col">Tipo</th>
+        <th scope="col">Precio</th>
+        <th scope="col">Fecha Ingreso</th>
+        <th scope="col">Fecha Salida</th>
+        <th scope="col">Estado</th>
+        <th scope="col">Acciones</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let reservacion of reservaciones$ | async" style="text-align: center">
+        <th>{{ reservacion.id }}</th>
+        <td>{{ reservacion.huesped?.nombre }}</td>
+        <td>{{ reservacion.huesped?.email }}</td>
+        <td>{{ reservacion.huesped?.telefono }}</td>
+        <td>{{ reservacion.habitacion?.numeroHabitacion }}</td>
+        <td>{{ reservacion.habitacion?.tipoHabitacion }}</td>
+        <td>{{ reservacion.habitacion?.precio }}</td>
+        <td>{{ reservacion.fechaIngreso }}</td>
+        <td>{{ reservacion.fechaSalida }}</td>
+        <td>{{ reservacion.estadoReservacion }}</td>
+        <td>
+          <button class="btn btn-primary btn-sm me-1 ms-1" (click)="editarReservacion(reservacion)">
+            <i class="fa fa-edit"></i> Actualizar
+          </button>
+          <button *ngIf="isAdmin()" class="btn btn-danger btn-sm" (click)="deleteReservacion(reservacion)">
+            <i class="fa fa-trash"></i> Eliminar
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" #reservasModalRef tabindex="-1" aria-labelledby="reservasModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title" id="reservasModalLabel">{{ textoModal }}</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="reservasForm" (ngSubmit)="onSubmit()">
+
+          <div class="mb-3">
+            <label for="idHuesped" class="form-label">ID Huésped</label>
+            <input id="idHuesped" type="number" class="form-control" formControlName="idHuesped" placeholder="Ej. 1" />
+            <div *ngIf="reservasForm.get('idHuesped')?.invalid && reservasForm.get('idHuesped')?.touched" class="text-danger small mt-1">
+              <span *ngIf="reservasForm.get('idHuesped')?.errors?.['required']">El ID del huésped es requerido</span>
+              <span *ngIf="reservasForm.get('idHuesped')?.errors?.['min']">El ID debe ser mayor a 0</span>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="idHabitaciones" class="form-label">ID Habitación</label>
+            <input id="idHabitaciones" type="number" class="form-control" formControlName="idHabitaciones" placeholder="Ej. 1" />
+            <div *ngIf="reservasForm.get('idHabitaciones')?.invalid && reservasForm.get('idHabitaciones')?.touched" class="text-danger small mt-1">
+              <span *ngIf="reservasForm.get('idHabitaciones')?.errors?.['required']">El ID de la habitación es requerido</span>
+              <span *ngIf="reservasForm.get('idHabitaciones')?.errors?.['min']">El ID debe ser mayor a 0</span>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="fechaIngreso" class="form-label">Fecha de Ingreso</label>
+            <input id="fechaIngreso" type="date" class="form-control" formControlName="fechaIngreso" />
+            <div *ngIf="reservasForm.get('fechaIngreso')?.invalid && reservasForm.get('fechaIngreso')?.touched" class="text-danger small mt-1">
+              <span *ngIf="reservasForm.get('fechaIngreso')?.errors?.['required']">La fecha de ingreso es requerida</span>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="fechaSalida" class="form-label">Fecha de Salida</label>
+            <input id="fechaSalida" type="date" class="form-control" formControlName="fechaSalida" />
+            <div *ngIf="reservasForm.get('fechaSalida')?.invalid && reservasForm.get('fechaSalida')?.touched" class="text-danger small mt-1">
+              <span *ngIf="reservasForm.get('fechaSalida')?.errors?.['required']">La fecha de salida es requerida</span>
+            </div>
+          </div>
+
+          <div class="text-center">
+            <button type="submit" class="btn btn-success px-4" [disabled]="reservasForm.invalid">
+              <i class="fa fa-save"></i> Guardar
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

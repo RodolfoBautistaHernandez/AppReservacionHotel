@@ -13,6 +13,7 @@ import { LoginComponent } from './components/login/login.component';
 import { AuthInterceptor } from './shared/auth.interceptor';
 import { ErrorInterceptor } from './shared/error.interceptor';
 import { HuespedesComponent } from './components/huespedes/huespedes.component';
+import { ReservacionComponent } from './components/reservas/reservas.component';
 
 @NgModule({
   declarations: [
@@ -22,7 +23,8 @@ import { HuespedesComponent } from './components/huespedes/huespedes.component';
     FooterComponent,
     NavbarComponent,
     LoginComponent,
-    HuespedesComponent
+    HuespedesComponent,
+    ReservacionComponent
   ],
   imports: [
     BrowserModule,
