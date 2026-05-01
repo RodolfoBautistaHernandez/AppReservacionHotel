@@ -23,6 +23,8 @@ export interface DatosHabitacion {
 
 export interface ReservacionResponse {
   id: number;
+  idHuesped: number;        
+  idHabitaciones: number;
   huesped?: DatosHuesped;
   habitacion?: DatosHabitacion;
   fechaIngreso: string;

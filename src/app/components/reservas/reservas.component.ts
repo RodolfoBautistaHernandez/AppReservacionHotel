@@ -119,20 +119,28 @@ export class ReservacionComponent implements OnInit, AfterViewInit {
   }
 
   protected editarReservacion(reservacion: ReservacionResponse): void {
-    if (!reservacion.huesped || !reservacion.habitacion) return;
+  if (!reservacion.huesped || !reservacion.habitacion) return;
 
-    this.esEditMode = true;
-    this.selectedReservas = reservacion;
-    this.selectedReservasId = reservacion.id;
-    this.textoModal = 'Editando Reservación #' + reservacion.id;
-    this.reservasForm.patchValue({
-      idHuesped: reservacion.huesped.id,
-      idHabitaciones: reservacion.habitacion.id,
-      fechaIngreso: reservacion.fechaIngreso,
-      fechaSalida: reservacion.fechaSalida,
-    });
-    this.modalInstance.show();
-  }
+  this.esEditMode = true;
+  this.selectedReservas = reservacion;
+  this.selectedReservasId = reservacion.id;
+  this.textoModal = 'Editando Reservación #' + reservacion.id;
+
+  this.reservasForm.patchValue({
+    idHuesped: reservacion.huesped.id,
+    idHabitaciones: reservacion.habitacion.id,
+    fechaIngreso: this.parsearFecha(reservacion.fechaIngreso),  
+    fechaSalida: this.parsearFecha(reservacion.fechaSalida),    
+  });
+
+  this.modalInstance.show();
+}
+
+private parsearFecha(fecha: string): string {
+  if (!fecha) return '';
+  const [dia, mes, anio] = fecha.split('/');
+  return `${anio}-${mes}-${dia}`; 
+}
 
   protected isAdmin(): boolean {
     return this.authService.hasRole(Roles.ADMIN);
