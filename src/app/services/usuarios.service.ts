@@ -2,14 +2,14 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, map, Observable, of, throwError } from 'rxjs';
 import { UsuarioRequest, UsuarioResponse } from '../models/Usuario.model';
-import { enviroment } from '../enviroments/enviroment';
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UsuariosService {
 
-   private apiUrl: string = enviroment.apiUsuarios;
+   private apiUrl: string = environment.apiUsuarios;
 
   constructor(private http: HttpClient) { }
 

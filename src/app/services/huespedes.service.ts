@@ -1,53 +1,60 @@
-import { Injectable } from "@angular/core";
-import { enviroment } from "../enviroments/enviroment";
-import { HttpClient } from "@angular/common/http";
-import { HuespedRequest, HuespedResponse } from "../models/Huesped.model";
-import { catchError, map, Observable, of, throwError } from "rxjs";
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { catchError, Observable, throwError } from 'rxjs';
+
+import { HuespedRequest, HuespedResponse } from '../models/Huesped.model';
+import { environment } from '../environments/environment';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
-export class HuespedesService {
+export class HuespedService {
+  private apiUrl: string = environment.apiHuespedes;
 
-   private apiUrl: string = enviroment.apiHuespedes;
-
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   getHuespedes(): Observable<HuespedResponse[]> {
     return this.http.get<HuespedResponse[]>(this.apiUrl).pipe(
-      map(huespedes => huespedes.sort()),
-      catchError(error => {
-        console.error('Error al obtener los huespedes', error);
-        return of([]);
-      })
+      catchError((error) => {
+        console.error('Error al obtener los huéspedes', error);
+        return throwError(() => error);
+      }),
+    );
+  }
+
+  getHuesped(id: number): Observable<HuespedResponse> {
+    return this.http.get<HuespedResponse>(`${this.apiUrl}/${id}`).pipe(
+      catchError((error) => {
+        console.error('Error al obtener el huésped', error);
+        return throwError(() => error);
+      }),
     );
   }
 
   postHuesped(huesped: HuespedRequest): Observable<HuespedResponse> {
     return this.http.post<HuespedResponse>(this.apiUrl, huesped).pipe(
-      catchError(error => {
-        console.error('Error al registrar el usuario', error);
+      catchError((error) => {
+        console.error('Error al registrar el huésped', error);
         return throwError(() => error);
-      })
+      }),
     );
   }
 
-  putHuesped(huesped: HuespedRequest, huespedId: string): Observable<HuespedResponse> {
-    return this.http.put<HuespedResponse>(`${this.apiUrl}/${huespedId}`, huesped).pipe(
-      catchError(error => {
-        console.error('Error al actualizar el huesped', error);
+  putHuesped(huesped: HuespedRequest, id: number): Observable<HuespedResponse> {
+    return this.http.put<HuespedResponse>(`${this.apiUrl}/${id}`, huesped).pipe(
+      catchError((error) => {
+        console.error('Error al actualizar el huésped', error);
         return throwError(() => error);
-      })
+      }),
     );
   }
 
-  deleteHuesped(huespedId: string): Observable<HuespedResponse> {
-    return this.http.delete<HuespedResponse>(`${this.apiUrl}/${huespedId}`).pipe(
-      catchError(error => {
-        console.error('Error al eliminar el huesped', error);
+  deleteHuesped(id: number): Observable<HuespedResponse> {
+    return this.http.delete<HuespedResponse>(`${this.apiUrl}/${id}`).pipe(
+      catchError((error) => {
+        console.error('Error al eliminar el huésped', error);
         return throwError(() => error);
-      })
+      }),
     );
   }
-
 }

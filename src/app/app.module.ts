@@ -12,6 +12,7 @@ import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { LoginComponent } from './components/login/login.component';
 import { AuthInterceptor } from './shared/auth.interceptor';
 import { ErrorInterceptor } from './shared/error.interceptor';
+import { HuespedesComponent } from './components/huespedes/huespedes.component';
 
 @NgModule({
   declarations: [
@@ -20,7 +21,8 @@ import { ErrorInterceptor } from './shared/error.interceptor';
     UsuariosComponent,
     FooterComponent,
     NavbarComponent,
-    LoginComponent
+    LoginComponent,
+    HuespedesComponent
   ],
   imports: [
     BrowserModule,

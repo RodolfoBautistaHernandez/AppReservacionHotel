@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { enviroment } from '../enviroments/enviroment';
+import { environment } from '../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthRequest, AuthResponse, JwtPayload } from '../models/Auth.model';
@@ -11,7 +11,7 @@ import { tap } from 'rxjs';
 })
 export class AuthService {
 
-  private authUrl: string = enviroment.authUrl;
+  private authUrl: string = environment.authUrl;
 
   private tokenKey: string = 'auth-token';
 

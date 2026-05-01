@@ -1,11 +1,12 @@
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { UsuarioRequest, UsuarioResponse } from '../../models/Usuario.model';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DescripcionRoles, Roles } from '../../constanis/Roles';
 import Swal from 'sweetalert2';
-import { UsuariosService } from '../../services/usuarios.service';
 import { HuespedRequest, HuespedResponse } from '../../models/Huesped.model';
-import { HuespedesService } from '../../services/huespedes.service';
+
+import { BehaviorSubject, Observable, switchMap } from 'rxjs';
+import { AuthService } from '../../services/auth.service';
+import { HuespedService } from '../../services/huespedes.service';
 
 
 declare var bootstrap: any;
@@ -14,160 +15,145 @@ declare var bootstrap: any;
   selector: 'app-huespedes',
   standalone: false,
   templateUrl: './huespedes.component.html',
-  styleUrl: './huespedes.component.css'
+  styleUrl: './huespedes.component.css',
 })
 export class HuespedesComponent implements OnInit, AfterViewInit {
-
-  textoModal: string = 'Registrar Huespedes';
-  huespedes: HuespedResponse[] = [];
-  huespedForm: FormGroup;
-  roles: string[] =Object.values(Roles);
-  isEditMode: boolean = false;
-  selectedHuesped: HuespedResponse | null = null;
+  protected huespedes$!: Observable<HuespedResponse[]>;
+  protected textoModal: string = 'Registrar Huésped';
+  protected huespedForm: FormGroup;
+  protected esEditMode: boolean = false;
+  private selectedHuesped: HuespedResponse | null = null;
+  private selectedHuespedId: number | null = null;
+  private refresh$ = new BehaviorSubject<void>(undefined);
 
   @ViewChild('huespedModalRef')
   huespedModalEl!: ElementRef;
-
   private modalInstance!: any;
- 
 
-   constructor(
+  constructor(
     private fb: FormBuilder,
-    private huespedesService: HuespedesService
-
+    private huespedesService: HuespedService,
+    private authService: AuthService,
   ) {
     this.huespedForm = this.fb.group({
-      username: ['', [Validators.required, Validators.minLength(5), Validators.maxLength(20)]],
-      password: ['', [Validators.required, Validators.minLength(8)]],
-      roles: [[], [Validators.required]]
+      nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+      apellidoPaterno: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+      apellidoMaterno: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
+      email: ['', [Validators.required, Validators.email]],
+      telefono: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
+      tipoDocumento: ['', [Validators.required]],  
+      numeroDocumento: ['', [Validators.required]],
+      nacionalidad: ['', [Validators.required]],
     });
   }
 
-  ngOnInit(): void {
-    this.listarHuespedes();
+  private refrescarHuespedes(): void {
+    this.refresh$.next();
   }
 
   ngAfterViewInit(): void {
-    this.modalInstance = new bootstrap.Modal(this.huespedModalEl.nativeElement, { keyboard: false} );
+    this.modalInstance = new bootstrap.Modal(this.huespedModalEl.nativeElement, {
+      keyboard: false,
+    });
     this.huespedModalEl.nativeElement.addEventListener('hidden.bs.modal', () => {
-      this.resetFrom();
-
+      this.huespedForm.reset();
+      this.esEditMode = false;
+      this.selectedHuesped = null;
+      this.selectedHuespedId = null;
     });
   }
-  listarHuespedes(): void{
-    this.huespedesService.getHuespedes().subscribe({
-      next: resp => {
-        this.huespedes = resp;
-      },
-      error: (error) =>{
-        console.log('Erro al listar huespedes: ', error);
-        Swal.fire('Error', 'No se pudieron cargar los huespedes', 'error');
-      }
-    })
-
-  }
-
- /*  llenarLista(): void {
-    this.usuarios = [
-      { username: 'admin', roles: ['ROLE_ADMIN'] },
-      { username: 'usuario', roles: ['ROLE_USER'] }
-    ];
-  } */
 
   toggleForm(): void {
-    this.resetFrom();
-    this.textoModal = 'Registrar Huesped';
-    this.modalInstance.show();
-  }
-  resetFrom(): void{
-
-    this.isEditMode = false;
-    this.selectedHuesped = null;
-    this.huespedForm.reset();
-  }
-
-  editarHuesped(huesped: HuespedResponse): void { 
-    this.isEditMode = true;
-    this.selectedHuesped = huesped;
-    this.textoModal = 'Editando Huesped: ' + huesped.nombre;
-
-    this.huespedForm.patchValue({...huesped});
+    this.textoModal = 'Registrar Huésped';
     this.modalInstance.show();
   }
 
-  transformarRol(rol: string): string{
-    return DescripcionRoles[rol as Roles] || 'Desconocido';
+  public ngOnInit(): void {
+    this.huespedes$ = this.refresh$.pipe(
+      switchMap(() => this.huespedesService.getHuespedes()),
+    );
   }
 
-  onSubmit(): void {
-    //console.info('Valor del formulario: ', this.usuarioForm.value)
-    if(this.huespedForm.invalid)return;
+  protected onSubmit(): void {
+    if (this.huespedForm.invalid) return;
 
-    const huespedData: HuespedRequest = this.huespedForm.value;
+    const huespedData: HuespedRequest = this.huespedForm.getRawValue();
+    console.log("ffhffhjhj", huespedData)
 
-    if(this.isEditMode && this.selectedHuesped){
-
-      this.huespedesService.postHuesped(huespedData).subscribe({
-      next: huespedActualizando =>{
-
-        const index: number = this.huespedes.findIndex(huesped => huesped.nombre == this.selectedHuesped?.nombre);
-        if(index !== -1) this.huespedes[index] = huespedActualizando;
-        
-    Swal.fire('Registrado', 'Huesped registrado correctamente', 'success');
-    this.modalInstance.hiden();
-
-      },
-      error: (error) => {
-        console.log('Error al registrar huesped: ', error);
-        Swal.fire('Error', 'No se pudo registrar el huesped', 'error');
-      }
-    });
-
-    } else{
-      this.huespedesService.postHuesped(huespedData).subscribe({
-      next: nuevoHuesped =>{
-        this.huespedes.push(nuevoHuesped);
-    Swal.fire('Registrado', 'Huesped registrado correctamente', 'success');
-    this.modalInstance.hiden();
-
-      },
-      error: (error) => {
-        console.log('Error al registrar huesped: ', error);
-        Swal.fire('Error', 'No se pudo registrar el huesped', 'error');
-      }
-    });
-
+    if (this.esEditMode && this.selectedHuesped && this.selectedHuespedId) {
+      this.huespedesService.putHuesped(huespedData, this.selectedHuespedId).subscribe({
+        next: (): void => {
+          this.refrescarHuespedes();
+          Swal.fire('Actualizado', 'Huésped actualizado correctamente', 'success');
+          this.modalInstance.hide();
+        },
+        error: (error) => {
+          console.log('Error al actualizar huésped: ', error);
+          Swal.fire({
+          icon: 'error',
+          title: 'Error',
+           html: `No se puede actualizar el huésped<br><small>${error.error?.message ?? ''}</small>`,
+          });
+        },
+      });
+      return;
     }
-    
-    
 
+    this.huespedesService.postHuesped(huespedData).subscribe({
+      next: (): void => {
+        this.refrescarHuespedes();
+        Swal.fire('Registrado', 'Huésped registrado correctamente', 'success');
+        this.modalInstance.hide();
+      },
+      error: (error) => {
+        console.log('Error al registrar huésped: ', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+           html: `No se puede registrar el huésped<br><small>${error.error?.message ?? ''}</small>`,
+});
+      },
+    });
   }
 
-  deleteHuesped(nombre: string): void {
+  protected editarHuesped(huesped: HuespedResponse): void {
+    this.esEditMode = true;
+    this.selectedHuesped = huesped;
+    this.selectedHuespedId = huesped.id;
+    this.textoModal = 'Editando Huésped: ' + huesped.nombre + ' ' + huesped.apellidoPaterno;
+    this.huespedForm.patchValue({ ...huesped });
+    this.modalInstance.show();
+  }
+
+  protected isAdmin(): boolean {
+    return this.authService.hasRole(Roles.ADMIN);
+  }
+
+  protected deleteHuesped(huesped: HuespedResponse): void {
     Swal.fire({
-      title:'¿Estas seguro?',
-      text: `El huesped ${nombre} será elimidado permanentemente`,
+      title: '¿Estás seguro?',
+      text: `El huésped: ${huesped.nombre} ${huesped.apellidoPaterno} será eliminado`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Si eliminar',
-      cancelButtonText: 'Cancelar'
-    }).then(result =>{
-      if(result.isConfirmed){
-        this.huespedesService.deleteHuesped(nombre).subscribe({
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.huespedesService.deleteHuesped(huesped.id).subscribe({
           next: () => {
-            this.huespedes = this.huespedes.filter(u => u.nombre !== nombre);
-    Swal.fire('Eliminado', 'Huesped eliminado correctamente', 'success');
+            this.refrescarHuespedes();
+            Swal.fire('Eliminado', 'Huésped eliminado correctamente', 'success');
           },
           error: (error) => {
-        console.log('Error al eliminar huesped: ', error);
-        Swal.fire('Error', 'No se pudo eliminar el huesped', 'error');
-      }
+            console.error('Error al eliminar huésped: ', error);
+            Swal.fire({
+              icon: 'error',
+              title: 'Error',
+              html: `No se pudo eliminar el huésped<br><small>${error.error?.message ?? ''}</small>`,
+              });
+          },
         });
-    
       }
     });
-    
   }
-
-  }
-  
+}
